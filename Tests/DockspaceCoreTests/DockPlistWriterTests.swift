@@ -76,7 +76,7 @@ final class DockPlistWriterTests: XCTestCase {
     // Write a new snapshot with different items.
     let snapshot = DockSnapshot(
       apps: [
-        .app(AppEntry(path: "/Applications/Slack.app", displayName: "Slack")),
+        .app(AppEntry(path: "/Applications/Slack.app", displayName: "Slack"))
       ],
       others: []
     )

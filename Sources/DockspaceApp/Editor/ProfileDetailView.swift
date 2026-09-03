@@ -2,14 +2,18 @@ import DockspaceCore
 import SwiftUI
 
 /// Editor for a single profile. Lets the user rename, recolor, reorder
-/// items, add apps and spacers, and delete items.
+/// items, edit labels, add apps/files/URLs/spacers, and delete items.
 @MainActor
 struct ProfileDetailView: View {
   @Environment(AppState.self) private var state
   let profileID: UUID
 
   @State private var draft: Profile?
+  @State private var editingItemIndex: Int?
+  @State private var editingLabel: String = ""
   @State private var showingAppPicker = false
+  @State private var showingFilePicker = false
+  @State private var showingURLPicker = false
 
   var body: some View {
     Group {
@@ -51,37 +55,25 @@ struct ProfileDetailView: View {
 
           Section("Items") {
             ForEach(Array(draft.items.enumerated()), id: \.offset) { index, item in
-              HStack {
-                ItemBadgeView(item: item)
-                Text(item.displayName)
-                  .lineLimit(1)
-                Spacer()
-                Button {
-                  removeItem(at: index)
-                } label: {
-                  Image(systemName: "minus.circle")
-                }
-                .buttonStyle(.borderless)
-              }
+              itemRow(item: item, index: index)
             }
             .onMove(perform: moveItems)
 
             HStack {
-              Button {
-                showingAppPicker = true
-              } label: {
-                Label("Add app", systemImage: "plus.app")
-              }
-              Spacer()
               Menu {
+                Button("App…") { showingAppPicker = true }
+                Button("File or Folder…") { showingFilePicker = true }
+                Button("URL…") { showingURLPicker = true }
+                Divider()
                 ForEach(SpacerVariant.allCases, id: \.self) { variant in
-                  Button(variant.rawValue.replacingOccurrences(of: "-tile", with: "").capitalized) {
+                  Button(spacerLabel(variant)) {
                     insertSpacer(variant)
                   }
                 }
               } label: {
-                Label("Add spacer", systemImage: "rectangle.split.3x1")
+                Label("Add item", systemImage: "plus")
               }
+              Spacer()
             }
           }
 
@@ -115,7 +107,154 @@ struct ProfileDetailView: View {
         insertApp(appEntry)
       }
     }
+    .sheet(isPresented: $showingFilePicker) {
+      AddFileSheet { fileEntry in
+        insertFile(fileEntry)
+      }
+    }
+    .sheet(isPresented: $showingURLPicker) {
+      AddURLSheet { urlEntry in
+        insertURL(urlEntry)
+      }
+    }
   }
+
+  // MARK: - Item rows
+
+  @ViewBuilder
+  private func itemRow(item: DockItem, index: Int) -> some View {
+    HStack(spacing: 10) {
+      ItemIconView(item: item)
+      if editingItemIndex == index, canEditLabel(item) {
+        TextField("Label", text: $editingLabel)
+          .textFieldStyle(.roundedBorder)
+          .onSubmit { commitLabelEdit() }
+        Button("Save") { commitLabelEdit() }
+          .buttonStyle(.borderless)
+        Button("Cancel") { cancelLabelEdit() }
+          .buttonStyle(.borderless)
+      } else {
+        VStack(alignment: .leading, spacing: 2) {
+          Text(item.displayName)
+            .lineLimit(1)
+          if let subtitle = itemSubtitle(item) {
+            Text(subtitle)
+              .font(.caption2)
+              .foregroundStyle(.secondary)
+              .lineLimit(1)
+          }
+        }
+        Spacer()
+        if canEditLabel(item) {
+          Button {
+            beginLabelEdit(at: index, current: item.displayName)
+          } label: {
+            Image(systemName: "pencil")
+          }
+          .buttonStyle(.borderless)
+          .help("Rename")
+        }
+        Button {
+          removeItem(at: index)
+        } label: {
+          Image(systemName: "minus.circle")
+        }
+        .buttonStyle(.borderless)
+        .help("Remove")
+      }
+    }
+    .contextMenu {
+      if canEditLabel(item) {
+        Button("Rename") {
+          beginLabelEdit(at: index, current: item.displayName)
+        }
+      }
+      Button("Remove", role: .destructive) {
+        removeItem(at: index)
+      }
+    }
+  }
+
+  private func itemSubtitle(_ item: DockItem) -> String? {
+    switch item {
+    case .app(let entry):
+      return entry.path
+    case .file(let entry):
+      return entry.path
+    case .url(let entry):
+      return entry.url
+    case .spacer:
+      return nil
+    }
+  }
+
+  private func canEditLabel(_ item: DockItem) -> Bool {
+    switch item {
+    case .app, .file, .url: return true
+    case .spacer: return false
+    }
+  }
+
+  private func beginLabelEdit(at index: Int, current: String) {
+    editingItemIndex = index
+    editingLabel = current
+  }
+
+  private func commitLabelEdit() {
+    guard let index = editingItemIndex, var copy = draft else {
+      cancelLabelEdit()
+      return
+    }
+    let trimmed = editingLabel.trimmingCharacters(in: .whitespacesAndNewlines)
+    let next: DockItem? = {
+      guard copy.items.indices.contains(index) else { return nil }
+      let item = copy.items[index]
+      switch item {
+      case .app(let entry):
+        return .app(
+          AppEntry(
+            path: entry.path,
+            bundleIdentifier: entry.bundleIdentifier,
+            displayName: trimmed.isEmpty ? nil : trimmed
+          ))
+      case .file(let entry):
+        return .file(
+          FileEntry(
+            path: entry.path,
+            displayName: trimmed.isEmpty ? nil : trimmed,
+            isDirectory: entry.isDirectory
+          ))
+      case .url(let entry):
+        return .url(
+          URLEntry(
+            url: entry.url,
+            displayName: trimmed.isEmpty ? nil : trimmed
+          ))
+      case .spacer:
+        return nil
+      }
+    }()
+    if let next {
+      copy.items[index] = next
+      draft = copy
+    }
+    cancelLabelEdit()
+  }
+
+  private func cancelLabelEdit() {
+    editingItemIndex = nil
+    editingLabel = ""
+  }
+
+  private func spacerLabel(_ variant: SpacerVariant) -> String {
+    switch variant {
+    case .small: return "Small spacer"
+    case .flex: return "Flex spacer"
+    case .default: return "Spacer"
+    }
+  }
+
+  // MARK: - Mutators
 
   private func currentProfile() -> Profile? {
     state.profiles.first { $0.id == profileID }
@@ -132,6 +271,18 @@ struct ProfileDetailView: View {
     draft = copy
   }
 
+  private func insertFile(_ entry: FileEntry) {
+    guard var copy = draft else { return }
+    copy.items.append(.file(entry))
+    draft = copy
+  }
+
+  private func insertURL(_ entry: URLEntry) {
+    guard var copy = draft else { return }
+    copy.items.append(.url(entry))
+    draft = copy
+  }
+
   private func insertSpacer(_ variant: SpacerVariant) {
     guard var copy = draft else { return }
     copy.items.append(.spacer(variant))
@@ -142,36 +293,20 @@ struct ProfileDetailView: View {
     guard var copy = draft, copy.items.indices.contains(index) else { return }
     copy.items.remove(at: index)
     draft = copy
+    if editingItemIndex == index {
+      cancelLabelEdit()
+    } else if let editing = editingItemIndex, editing > index {
+      editingItemIndex = editing - 1
+    }
   }
 
   private func moveItems(from source: IndexSet, to destination: Int) {
     guard var copy = draft else { return }
     copy.items.move(fromOffsets: source, toOffset: destination)
     draft = copy
-  }
-}
-
-/// Small visual badge for each `DockItem` row inside the detail form.
-struct ItemBadgeView: View {
-  let item: DockItem
-
-  var body: some View {
-    Group {
-      switch item {
-      case .app:
-        Image(systemName: "app.fill")
-          .foregroundStyle(.tint)
-      case .spacer:
-        Image(systemName: "rectangle.split.3x1")
-          .foregroundStyle(.secondary)
-      case .file:
-        Image(systemName: "doc")
-          .foregroundStyle(.secondary)
-      case .url:
-        Image(systemName: "link")
-          .foregroundStyle(.secondary)
-      }
+    if let editing = editingItemIndex {
+      cancelLabelEdit()
+      _ = editing
     }
-    .frame(width: 22)
   }
 }
