@@ -97,9 +97,9 @@ public final class AppState {
             }
         }
         hotkeys.setBindings(bindings) { [weak self] profileID in
+            guard let self else { return }
             Task { @MainActor in
-                guard let self,
-                      let profile = self.profiles.first(where: { $0.id == profileID })
+                guard let profile = self.profiles.first(where: { $0.id == profileID })
                 else { return }
                 self.switchTo(profile: profile)
             }
@@ -110,8 +110,8 @@ public final class AppState {
 
     private func startFocusMonitor() {
         focus.start { [weak self] isFocused in
+            guard let self else { return }
             Task { @MainActor in
-                guard let self else { return }
                 self.handleFocusChange(isFocused: isFocused)
             }
         }
