@@ -2,6 +2,7 @@ import SwiftUI
 import DockspaceCore
 
 /// Popover content shown when the user clicks the menu bar icon.
+@MainActor
 struct MenuBarContentView: View {
     @Environment(AppState.self) private var state
     @State private var showingEditor = false
