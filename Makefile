@@ -9,7 +9,7 @@ CONFIG ?= release
 
 .DEFAULT_GOAL := help
 
-.PHONY: help build test run clean release icon format
+.PHONY: help build test run dev clean release icon format
 
 help: ## Show this help.
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -23,8 +23,12 @@ build-release: ## Build the executable (release).
 test: ## Run unit tests.
 	$(SWIFT) test
 
-run: ## Launch the app in dev mode.
+run: ## Launch the app in dev mode (NOTE: use `make dev` for a real menu bar test).
 	$(SWIFT) run Dockspace
+
+dev: build-release ## Build a real .app bundle and open it. This is the right way to test the menu bar UX.
+	./Scripts/build-app.sh release
+	open ./build/Dockspace.app
 
 app: build-release ## Build a real .app bundle (release) into build/Dockspace.app.
 	./Scripts/build-app.sh release

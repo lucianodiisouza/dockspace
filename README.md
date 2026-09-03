@@ -29,7 +29,15 @@ Inspired by [Dockset](https://dockset.app/) — built as an open-source alternat
 
 The project ships a `Makefile` with the common commands. `make help` lists them all.
 
-### From terminal (fast iteration)
+### As a proper `.app` bundle (recommended for development)
+
+```bash
+make dev
+```
+
+This is the **right way to test the menu bar UX**. `make dev` builds a release binary, assembles a `.app` bundle with `Info.plist` (including `LSUIElement=YES` so the app hides from the Dock and runs as a proper menu bar accessory), embeds entitlements, ad-hoc codesigns, and opens the result. Without the bundle, `swift run` will spawn the binary as a regular foreground app — the menu bar popover will misbehave because `LSUIElement` is missing.
+
+### From terminal (fast iteration, limited)
 
 ```bash
 make run
@@ -37,16 +45,16 @@ make run
 swift run Dockspace
 ```
 
-Opens a SwiftUI menu bar app. May show a Dock icon in dev mode (release builds hide it).
+Use this only when iterating on pure code changes. The SwiftUI menu bar will be visible but popovers may not behave correctly without `LSUIElement=YES` and the embedded entitlements. When in doubt, run `make dev`.
 
-### As a proper `.app` bundle (recommended for daily use)
+### Building a bundle manually
 
 ```bash
 make app
 open ./build/Dockspace.app
 ```
 
-This runs `Scripts/build-app.sh`, which compiles a release binary, assembles a proper `.app` bundle with `Info.plist` (`LSUIElement=YES`, focus status usage description, etc.), embeds the entitlements, and applies an ad-hoc code signature.
+`make app` only builds the bundle, `make dev` builds and opens it.
 
 ### Signed + notarized DMG (for distribution)
 
