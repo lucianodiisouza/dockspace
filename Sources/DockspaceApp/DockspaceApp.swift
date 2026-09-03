@@ -4,19 +4,23 @@ import SwiftUI
 
 /// Entry point of the Dockspace menu bar app.
 ///
-/// Defines the `MenuBarExtra` popover plus three secondary `Window`
-/// scenes (profile editor, settings, new-profile sheet) that open via
-/// `openWindow(id:)` from the popover. Sheets inside a menu bar popover
-/// are unreliable — the popover typically closes before the sheet can
-/// attach, and macOS does not always give the sheet a parent window.
-/// Real `Window` scenes are stable.
+/// Defines the menu bar status item (driven imperatively by
+/// `MenuBarController` for click-routing reliability) plus the
+/// secondary `Window` scenes (profile editor, settings, new-profile
+/// sheet) that open via `openWindow(id:)` from the popover content.
 @main
 struct DockspaceApp: App {
   @State private var state: AppState
 
+  /// Strong reference so the controller — and therefore the status
+  /// item and popover — survives the entire app lifetime. SwiftUI
+  /// owns this property and will not release it.
+  private let menuBarController: MenuBarController
+
   init() {
+    let initialState: AppState
     do {
-      self._state = State(initialValue: try AppState.live())
+      initialState = try AppState.live()
     } catch {
       // If we cannot build the live state (e.g. Application
       // Support is unwritable) we fall back to an empty state so
@@ -27,32 +31,20 @@ struct DockspaceApp: App {
       let hotkeys = GlobalHotkeyManager()
       let focusProvider = SystemFocusStatusProvider()
       let focus = FocusModeMonitor(provider: focusProvider)
-      self._state = State(
-        initialValue: AppState(
-          store: store,
-          swapper: swapper,
-          backup: backup,
-          hotkeys: hotkeys,
-          focus: focus,
-          focusProvider: focusProvider
-        ))
+      initialState = AppState(
+        store: store,
+        swapper: swapper,
+        backup: backup,
+        hotkeys: hotkeys,
+        focus: focus,
+        focusProvider: focusProvider
+      )
     }
+    self._state = State(initialValue: initialState)
+    self.menuBarController = MenuBarController(state: initialState)
   }
 
   var body: some Scene {
-    MenuBarExtra {
-      MenuBarContentView()
-        .environment(state)
-    } label: {
-      Image(systemName: "dock.rectangle")
-    }
-    // `.window` renders a real SwiftUI popover panel rather than a
-    // native NSMenu. We need this because the menu content depends
-    // on @Environment(AppState.self), @State bindings, and open
-    // window actions — none of which work reliably with the .menu
-    // style (which flattens the body into NSMenuItems).
-    .menuBarExtraStyle(.window)
-
     Window("Dockspace", id: AppWindow.editor.rawValue) {
       ProfileEditorView()
         .environment(state)
@@ -78,8 +70,8 @@ struct DockspaceApp: App {
   }
 }
 
-/// Stable identifiers for the app's secondary windows. The menu bar
-/// popover opens these via `@Environment(\.openWindow)`.
+/// Stable identifiers for the app's secondary windows. The popover
+/// content opens these via `@Environment(\.openWindow)`.
 enum AppWindow: String {
   case editor = "dockspace.editor"
   case newProfile = "dockspace.new-profile"

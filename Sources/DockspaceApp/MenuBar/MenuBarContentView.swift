@@ -64,6 +64,9 @@ struct MenuBarContentView: View {
         "MenuBarContentView appeared: profiles=\(self.state.profiles.count, privacy: .public) active=\(self.state.activeProfileId?.uuidString ?? "nil", privacy: .public)"
       )
     }
+    .onDisappear {
+      popoverLog.info("MenuBarContentView disappeared")
+    }
   }
 
   // MARK: - Sections
