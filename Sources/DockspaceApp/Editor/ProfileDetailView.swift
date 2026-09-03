@@ -3,6 +3,7 @@ import DockspaceCore
 
 /// Editor for a single profile. Lets the user rename, recolor, reorder
 /// items, add apps and spacers, and delete items.
+@MainActor
 struct ProfileDetailView: View {
     @Environment(AppState.self) private var state
     let profileID: UUID
