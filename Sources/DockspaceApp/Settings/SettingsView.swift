@@ -3,6 +3,7 @@ import DockspaceStorage
 
 /// Lightweight settings sheet. Lives inside the menu bar popover flow
 /// rather than as a `Settings` scene to keep the popover self-contained.
+@MainActor
 struct SettingsView: View {
     @State private var launchAtLogin: Bool
     private let preferences: AppPreferences
