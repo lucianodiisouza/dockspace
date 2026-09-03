@@ -46,6 +46,14 @@ let package = Package(
                 "DockspaceCore"
             ],
             path: "Tests/DockspaceCoreTests"
+        ),
+        .testTarget(
+            name: "DockspaceStorageTests",
+            dependencies: [
+                "DockspaceCore",
+                "DockspaceStorage"
+            ],
+            path: "Tests/DockspaceStorageTests"
         )
     ]
 )
