@@ -1,5 +1,9 @@
 # Dockspace
 
+[![CI](https://github.com/lucianodiisouza/dockspace/actions/workflows/ci.yml/badge.svg)](https://github.com/lucianodiisouza/dockspace/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![macOS 14+](https://img.shields.io/badge/macOS-14%2B-blueviolet)](https://developer.apple.com/macos/)
+
 > A different Dock for whatever you're doing.
 
 Dockspace is a tiny macOS menu bar app that saves the apps and spacers in your Dock, and lets you switch the whole setup in one click. 100% local, no account, no analytics.
