@@ -38,10 +38,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_15.4.app || sudo xcode-select -s /Applications/Xcode.app
-      - name: swift format lint
-        # `swift format` is the integrated subcommand that ships with
-        # Xcode 15+. We check in lint mode and fail the job if any
-        # file would be reformatted.
+      - name: swift-format lint
+        # `swift-format` is shipped as a toolchain binary inside Xcode.
+        # We invoke the binary directly via xcrun to avoid the
+        # `swift format` subcommand's PATH lookup which can fail in
+        # CI runner images.
         run: |
           set -euo pipefail
           files=$(find Sources Tests -name '*.swift')
@@ -50,5 +51,5 @@ jobs:
             exit 0
           fi
           for f in $files; do
-            xcrun swift format lint --strict "$f"
+            xcrun swift-format lint --strict "$f"
           done
