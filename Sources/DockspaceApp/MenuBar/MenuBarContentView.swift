@@ -1,5 +1,8 @@
 import DockspaceCore
 import SwiftUI
+import os
+
+private let popoverLog = Logger(subsystem: "app.dockspace", category: "popover")
 
 /// Popover content shown when the user clicks the menu bar icon.
 ///
@@ -56,6 +59,11 @@ struct MenuBarContentView: View {
     }
     .padding(.vertical, 6)
     .frame(minWidth: 240)
+    .onAppear {
+      popoverLog.info(
+        "MenuBarContentView appeared: profiles=\(self.state.profiles.count, privacy: .public) active=\(self.state.activeProfileId?.uuidString ?? "nil", privacy: .public)"
+      )
+    }
   }
 
   // MARK: - Sections

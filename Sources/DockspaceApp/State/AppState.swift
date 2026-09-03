@@ -2,6 +2,9 @@ import DockspaceCore
 import DockspaceStorage
 import Foundation
 import SwiftUI
+import os
+
+private let appLog = Logger(subsystem: "app.dockspace", category: "app")
 
 /// Source of truth for the running app.
 ///
@@ -39,6 +42,9 @@ public final class AppState {
     self.focusProvider = focusProvider
     self.profiles = store.file.profiles
     self.activeProfileId = store.file.activeProfileId
+    appLog.info(
+      "AppState init: fileExistedOnLoad=\(store.fileExistedOnLoad, privacy: .public) profiles=\(self.profiles.count, privacy: .public) active=\(self.activeProfileId?.uuidString ?? "nil", privacy: .public)"
+    )
     seedFirstProfileIfNeeded()
     registerHotkeys()
     startFocusMonitor()
@@ -59,12 +65,25 @@ public final class AppState {
   /// user has ever opened the app before (even and deleted every
   /// profile), we respect that and start blank.
   private func seedFirstProfileIfNeeded() {
-    guard !store.fileExistedOnLoad else { return }
-    guard profiles.isEmpty else { return }
-    guard let snapshot = try? swapper.snapshot() else { return }
-    // A totally empty dock would be a useless seed — let the user start
-    // from scratch in that case.
-    guard !snapshot.allItems.isEmpty else { return }
+    guard !store.fileExistedOnLoad else {
+      appLog.info("seed: skip (file existed on load)")
+      return
+    }
+    guard profiles.isEmpty else {
+      appLog.info("seed: skip (profiles already non-empty)")
+      return
+    }
+    let snapshot: DockSnapshot
+    do {
+      snapshot = try swapper.snapshot()
+    } catch {
+      appLog.error("seed: snapshot failed: \(error.localizedDescription, privacy: .public)")
+      return
+    }
+    guard !snapshot.allItems.isEmpty else {
+      appLog.info("seed: skip (current dock is empty)")
+      return
+    }
     let seeded = Profile(
       name: "Default",
       color: .blue,
@@ -75,9 +94,10 @@ public final class AppState {
       try store.setActive(id: seeded.id)
       profiles = store.file.profiles
       activeProfileId = seeded.id
+      appLog.info(
+        "seed: created Default profile with \(seeded.items.count, privacy: .public) items")
     } catch {
-      // Best-effort: if persistence fails the user still sees an empty
-      // popover and can create a profile manually.
+      appLog.error("seed: persist failed: \(error.localizedDescription, privacy: .public)")
     }
   }
 
