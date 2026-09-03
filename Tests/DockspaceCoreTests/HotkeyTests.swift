@@ -4,7 +4,7 @@ import XCTest
 
 final class HotkeyTests: XCTestCase {
   func test_matches_returnsTrueForSameKeyAndModifiers() {
-    let hotkey = Hotkey(keyCode: 0x31 /* space */, modifiers: [.command, .shift])
+    let hotkey = Hotkey(keyCode: 0x31, modifiers: [.command, .shift])  // space key
     XCTAssertTrue(hotkey.matches(keyCode: 0x31, modifiers: [.command, .shift]))
   }
 
@@ -19,13 +19,13 @@ final class HotkeyTests: XCTestCase {
   }
 
   func test_displayString_rendersModifiersInCanonicalOrder() {
-    let hotkey = Hotkey(keyCode: 0x00 /* A */, modifiers: [.shift, .command, .option, .control])
+    let hotkey = Hotkey(keyCode: 0x00, modifiers: [.shift, .command, .option, .control])  // A key
     // Canonical order is control, option, shift, command.
     XCTAssertEqual(hotkey.displayString, "⌃⌥⇧⌘A")
   }
 
   func test_displayString_uppercasesLetterKeys() {
-    let hotkey = Hotkey(keyCode: 0x1F /* O */, modifiers: [.command])
+    let hotkey = Hotkey(keyCode: 0x1F, modifiers: [.command])  // O key
     XCTAssertEqual(hotkey.displayString, "⌘O")
   }
 }
