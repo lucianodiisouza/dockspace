@@ -32,7 +32,8 @@ public final class FocusModeMonitor: @unchecked Sendable {
         }
         self.timer = timer
         timer.resume()
-        logger.debug("focus monitor started (interval=\(interval, privacy: .public)s)")
+        let intervalSnapshot = interval
+        logger.debug("focus monitor started (interval=\(intervalSnapshot, privacy: .public)s)")
     }
 
     public func stop() {
