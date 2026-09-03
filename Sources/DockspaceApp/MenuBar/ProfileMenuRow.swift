@@ -3,6 +3,8 @@ import SwiftUI
 
 /// One row inside the menu bar popover. Renders a colored swatch, the
 /// profile name, and a checkmark for the currently active profile.
+/// Uses the same `MenuRowButtonStyle` as the action rows so the
+/// popover has a single visual language.
 struct ProfileMenuRow: View {
   let profile: Profile
   let isActive: Bool
@@ -22,9 +24,9 @@ struct ProfileMenuRow: View {
         Spacer()
       }
       .contentShape(Rectangle())
-      .padding(.horizontal, 12)
+      .padding(.horizontal, 10)
       .padding(.vertical, 6)
     }
-    .buttonStyle(.plain)
+    .buttonStyle(MenuRowButtonStyle())
   }
 }

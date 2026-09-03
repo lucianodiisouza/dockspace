@@ -4,9 +4,12 @@ import SwiftUI
 
 /// Entry point of the Dockspace menu bar app.
 ///
-/// Builds a single `AppState` and injects it into the SwiftUI
-/// environment. All menu bar items and editor windows read from the
-/// same observable.
+/// Defines the `MenuBarExtra` popover plus three secondary `Window`
+/// scenes (profile editor, settings, new-profile sheet) that open via
+/// `openWindow(id:)` from the popover. Sheets inside a menu bar popover
+/// are unreliable — the popover typically closes before the sheet can
+/// attach, and macOS does not always give the sheet a parent window.
+/// Real `Window` scenes are stable.
 @main
 struct DockspaceApp: App {
   @State private var state: AppState
@@ -45,10 +48,40 @@ struct DockspaceApp: App {
     }
     // `.window` renders a real SwiftUI popover panel rather than a
     // native NSMenu. We need this because the menu content depends
-    // on @Environment(AppState.self), @State bindings, and
-    // .sheet presentations — none of which work with the .menu
-    // style (which flattens the body into NSMenuItems and only
-    // honors target/action).
+    // on @Environment(AppState.self), @State bindings, and open
+    // window actions — none of which work reliably with the .menu
+    // style (which flattens the body into NSMenuItems).
     .menuBarExtraStyle(.window)
+
+    Window("Dockspace", id: AppWindow.editor.rawValue) {
+      ProfileEditorView()
+        .environment(state)
+        .frame(minWidth: 640, minHeight: 420)
+    }
+    .windowResizability(.contentMinSize)
+    .defaultSize(width: 720, height: 480)
+
+    Window("New profile", id: AppWindow.newProfile.rawValue) {
+      NewProfileSheet()
+        .environment(state)
+        .frame(width: 380, height: 280)
+    }
+    .windowResizability(.contentSize)
+    .defaultSize(width: 380, height: 280)
+
+    Window("Dockspace Settings", id: AppWindow.settings.rawValue) {
+      SettingsView()
+        .frame(width: 420, height: 320)
+    }
+    .windowResizability(.contentSize)
+    .defaultSize(width: 420, height: 320)
   }
+}
+
+/// Stable identifiers for the app's secondary windows. The menu bar
+/// popover opens these via `@Environment(\.openWindow)`.
+enum AppWindow: String {
+  case editor = "dockspace.editor"
+  case newProfile = "dockspace.new-profile"
+  case settings = "dockspace.settings"
 }
