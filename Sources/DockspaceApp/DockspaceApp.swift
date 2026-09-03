@@ -43,6 +43,12 @@ struct DockspaceApp: App {
     } label: {
       Image(systemName: "dock.rectangle")
     }
-    .menuBarExtraStyle(.menu)
+    // `.window` renders a real SwiftUI popover panel rather than a
+    // native NSMenu. We need this because the menu content depends
+    // on @Environment(AppState.self), @State bindings, and
+    // .sheet presentations — none of which work with the .menu
+    // style (which flattens the body into NSMenuItems and only
+    // honors target/action).
+    .menuBarExtraStyle(.window)
   }
 }
