@@ -24,7 +24,7 @@ final class HotkeyTests: XCTestCase {
     }
 
     func test_displayString_uppercasesLetterKeys() {
-        let hotkey = Hotkey(keyCode: 0x2F /* o */, modifiers: [.command])
+        let hotkey = Hotkey(keyCode: 0x1F /* O */, modifiers: [.command])
         XCTAssertEqual(hotkey.displayString, "⌘O")
     }
 }
