@@ -63,12 +63,13 @@ Scripts/
 
 | Fase | Entrega | Status |
 |---|---|---|
-| 0 | Bootstrap (Package.swift, CI, README) | **Em andamento** |
-| 1 | `DockPlistReader` + `DockPlistWriter` + testes | Pendente |
-| 2 | `ProfileStore` (JSON CRUD) + `BackupManager` | Pendente |
-| 3 | MVP UI: MenuBarExtra + ProfileEditor + switch | Pendente |
-| 4 | Polish: ícone, settings, onboarding, i18n | Pendente |
-| 5 | Release v0.1: DMG, site, GitHub Release | Pendente |
+| 0 | Bootstrap (Package.swift, CI, README) | ✅ |
+| 1 | `DockPlistReader` + `DockPlistWriter` + testes | ✅ |
+| 2 | `ProfileStore` (JSON CRUD) + `BackupManager` | ✅ |
+| 3 | MVP UI: MenuBarExtra + ProfileEditor + switch | ✅ |
+| 4 | Hotkeys globais + Focus Mode + Settings + Change detection | ✅ |
+| 5 | Polish: ícone, onboarding, i18n | Pendente |
+| 6 | Release v0.2: DMG assinado, site, GitHub Release | Pendente |
 
 Plano completo vive em conversa e nas issues. Não foi materializado em `docs/PLAN.md` por enquanto.
 
