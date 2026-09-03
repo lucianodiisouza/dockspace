@@ -68,7 +68,16 @@ macOS doesn't expose a public API for editing the Dock. Dockspace reads and writ
 
 ## Status
 
-🚧 Pre-alpha. Scaffolded, no features yet. See `AGENTS.md` for the development roadmap.
+🚧 Pre-alpha v0.1. The first working slice is in place:
+
+- ✅ Read & write the live `com.apple.dock.plist` (Core)
+- ✅ Swap the Dock to a saved snapshot (SystemDockReloader + NoOpDockReloader)
+- ✅ Profile CRUD with JSON persistence in `~/Library/Application Support/Dockspace/`
+- ✅ Timestamped backups before every swap
+- ✅ Menu bar popover with profile list, switch, and active checkmark
+- ✅ Profile editor sheet with rename, recolor, item list, reorder, add app, add spacer
+
+Still TODO before a public release: hotkeys, Focus Mode integration, icon assets, signed/notarized DMG, Homebrew Cask. See `AGENTS.md` for the full roadmap.
 
 ## License
 
