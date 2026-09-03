@@ -6,6 +6,7 @@ struct MenuBarContentView: View {
     @Environment(AppState.self) private var state
     @State private var showingEditor = false
     @State private var creatingProfile = false
+    @State private var showingSettings = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -49,7 +50,27 @@ struct MenuBarContentView: View {
             }
             .buttonStyle(.plain)
             .padding(.horizontal, 8)
+
+            Button {
+                showingSettings = true
+            } label: {
+                Label("Settings…", systemImage: "gearshape")
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, 8)
             .padding(.bottom, 4)
+
+            Divider()
+
+            Button {
+                NSApplication.shared.terminate(nil)
+            } label: {
+                Label("Quit Dockspace", systemImage: "power")
+            }
+            .buttonStyle(.plain)
+            .keyboardShortcut("q")
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
 
             if let error = state.lastError {
                 Text(error)
@@ -67,6 +88,9 @@ struct MenuBarContentView: View {
         .sheet(isPresented: $showingEditor) {
             ProfileEditorView()
                 .environment(state)
+        }
+        .sheet(isPresented: $showingSettings) {
+            SettingsView()
         }
     }
 }
