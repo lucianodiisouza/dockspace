@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    name: Build & test (macOS 14)
+    runs-on: macos-14
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app || sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Show toolchain
+        run: |
+          swift --version
+          xcodebuild -version
+
+      - name: Build
+        run: swift build -c release
+
+      - name: Test
+        run: swift test --parallel
+
+  lint:
+    name: Format check
+    runs-on: macos-14
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app || sudo xcode-select -s /Applications/Xcode.app
+      - name: swift-format lint
+        # `swift-format` is shipped with the Swift toolchain. We check
+        # in lint mode and fail the job if any file would be reformatted.
+        run: |
+          set -euo pipefail
+          files=$(find Sources Tests -name '*.swift')
+          if [ -z "$files" ]; then
+            echo "No Swift files found."
+            exit 0
+          fi
+          for f in $files; do
+            swift-format lint --strict "$f"
+          done
