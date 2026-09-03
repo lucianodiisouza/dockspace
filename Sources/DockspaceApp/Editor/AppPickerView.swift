@@ -48,10 +48,14 @@ struct AppPickerView: View {
 
         let response = panel.runModal()
         guard response == .OK, let url = panel.url else { return nil }
+        let bundle = Bundle(url: url)
+        let displayName = bundle?.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
+            ?? bundle?.object(forInfoDictionaryKey: "CFBundleName") as? String
+            ?? url.deletingPathExtension().lastPathComponent
         return AppEntry(
             path: url.path,
-            bundleIdentifier: Bundle(url: url)?.bundleIdentifier,
-            displayName: Bundle(url: url)?["CFBundleDisplayName"] as? String ?? url.deletingPathExtension().lastPathComponent
+            bundleIdentifier: bundle?.bundleIdentifier,
+            displayName: displayName
         )
     }
 }
