@@ -4,11 +4,11 @@ import Foundation
 /// `file://` URL, or a webpage). Used for entries under
 /// `persistent-others`.
 public struct URLEntry: Codable, Equatable, Hashable, Sendable {
-    public let url: String
-    public let displayName: String?
+  public let url: String
+  public let displayName: String?
 
-    public init(url: String, displayName: String? = nil) {
-        self.url = url
-        self.displayName = displayName
-    }
+  public init(url: String, displayName: String? = nil) {
+    self.url = url
+    self.displayName = displayName
+  }
 }

@@ -10,19 +10,19 @@ import Intents
 /// Communication Notifications capability. We treat nil as "unknown"
 /// and let the app decide whether to surface a prompt.
 public protocol FocusStatusProvider: Sendable {
-    var isFocused: Bool? { get }
-    var isAuthorized: Bool { get }
+  var isFocused: Bool? { get }
+  var isAuthorized: Bool { get }
 }
 
 /// Production implementation that bridges to `INFocusStatusCenter`.
 public final class SystemFocusStatusProvider: FocusStatusProvider, @unchecked Sendable {
-    public init() {}
+  public init() {}
 
-    public var isFocused: Bool? {
-        INFocusStatusCenter.default.focusStatus.isFocused
-    }
+  public var isFocused: Bool? {
+    INFocusStatusCenter.default.focusStatus.isFocused
+  }
 
-    public var isAuthorized: Bool {
-        INFocusStatusCenter.default.authorizationStatus == .authorized
-    }
+  public var isAuthorized: Bool {
+    INFocusStatusCenter.default.authorizationStatus == .authorized
+  }
 }
