@@ -18,7 +18,9 @@ struct HotkeyRecorderView: View {
                     .padding(.vertical, 4)
                     .background(Color.secondary.opacity(0.15), in: RoundedRectangle(cornerRadius: 6))
                 Button("Change") { isRecording = true }
-                Button("Clear") { hotkey = nil }
+                Button("Clear") {
+                    hotkey = nil as Hotkey?
+                }
             } else {
                 Text("None")
                     .foregroundStyle(.secondary)
