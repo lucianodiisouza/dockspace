@@ -20,7 +20,11 @@ final class DockSwapperTests: XCTestCase {
         )
 
         let snapshot = try swapper.snapshot()
-        XCTAssertEqual(snapshot, seed)
+        // Compare items only — capturedAt uses Date() with sub-ms
+        // precision so two snapshots taken back-to-back compare unequal
+        // even when their content is identical.
+        XCTAssertEqual(snapshot.apps, seed.apps)
+        XCTAssertEqual(snapshot.others, seed.others)
     }
 
     func test_swap_writesNewStateAndInvokesReloader() throws {
