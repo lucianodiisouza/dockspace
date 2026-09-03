@@ -14,6 +14,15 @@ extension AppState {
         let swapper = DockSwapper.live()
         let backup = BackupManager(directory: backupsDir)
         let hotkeys = GlobalHotkeyManager()
-        return AppState(store: store, swapper: swapper, backup: backup, hotkeys: hotkeys)
+        let focusProvider = SystemFocusStatusProvider()
+        let focus = FocusModeMonitor(provider: focusProvider)
+        return AppState(
+            store: store,
+            swapper: swapper,
+            backup: backup,
+            hotkeys: hotkeys,
+            focus: focus,
+            focusProvider: focusProvider
+        )
     }
 }

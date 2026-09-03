@@ -20,20 +20,27 @@ public final class AppState {
     private let swapper: DockSwapper
     private let backup: BackupManager
     private let hotkeys: GlobalHotkeyManager
+    private let focus: FocusModeMonitor
+    private let focusProvider: FocusStatusProvider
 
     public init(
         store: ProfileStore,
         swapper: DockSwapper,
         backup: BackupManager,
-        hotkeys: GlobalHotkeyManager
+        hotkeys: GlobalHotkeyManager,
+        focus: FocusModeMonitor,
+        focusProvider: FocusStatusProvider
     ) {
         self.store = store
         self.swapper = swapper
         self.backup = backup
         self.hotkeys = hotkeys
+        self.focus = focus
+        self.focusProvider = focusProvider
         self.profiles = store.file.profiles
         self.activeProfileId = store.file.activeProfileId
         registerHotkeys()
+        startFocusMonitor()
     }
 
     public var activeProfile: Profile? {
@@ -95,6 +102,33 @@ public final class AppState {
                       let profile = self.profiles.first(where: { $0.id == profileID })
                 else { return }
                 self.switchTo(profile: profile)
+            }
+        }
+    }
+
+    // MARK: - Focus Mode glue
+
+    private func startFocusMonitor() {
+        focus.start { [weak self] isFocused in
+            Task { @MainActor in
+                guard let self else { return }
+                self.handleFocusChange(isFocused: isFocused)
+            }
+        }
+    }
+
+    private func handleFocusChange(isFocused: Bool) {
+        // A profile is "focus-bound" when its `focusModeBinding` is
+        // non-nil. We only act on transitions:
+        //   - focus turns ON  → activate the first focus-bound profile
+        //   - focus turns OFF → activate the most recent non-bound profile
+        if isFocused {
+            if let bound = profiles.first(where: { $0.focusModeBinding != nil }) {
+                switchTo(profile: bound)
+            }
+        } else {
+            if let fallback = profiles.first(where: { $0.focusModeBinding == nil }) {
+                switchTo(profile: fallback)
             }
         }
     }

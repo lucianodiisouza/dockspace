@@ -22,11 +22,15 @@ struct DockspaceApp: App {
             let swapper = DockSwapper.live()
             let backup = BackupManager(directory: URL(fileURLWithPath: "/dev/null"))
             let hotkeys = GlobalHotkeyManager()
+            let focusProvider = SystemFocusStatusProvider()
+            let focus = FocusModeMonitor(provider: focusProvider)
             self._state = State(initialValue: AppState(
                 store: store,
                 swapper: swapper,
                 backup: backup,
-                hotkeys: hotkeys
+                hotkeys: hotkeys,
+                focus: focus,
+                focusProvider: focusProvider
             ))
         }
     }
