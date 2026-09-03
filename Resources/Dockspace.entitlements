@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!--
+        Dockspace does NOT enable the App Sandbox because it needs to
+        touch files outside the container (~/Library/Preferences/
+        com.apple.dock.plist, kill Dock via /bin/sh). If you ever
+        decide to ship a sandboxed build, you'll also need
+        `com.apple.security.files.user-selected.read-write` and a
+        security-scoped bookmark workflow.
+    -->
+    <key>com.apple.security.app-sandbox</key>
+    <false/>
+
+    <!--
+        Required to register/unregister the app with the Login Items
+        list via SMAppService. Without this, launch-at-login silently
+        no-ops.
+    -->
+    <key>com.apple.security.application-groups</key>
+    <array/>
+
+    <!--
+        For the global hotkey listener. AppKit can usually do without
+        an entitlement, but if we ever swap to a CGEvent tap we'll
+        need accessibility granted by the user. Surfacing the prompt
+        requires nothing in the entitlements; it requires a build flag.
+    -->
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <false/>
+</dict>
+</plist>
