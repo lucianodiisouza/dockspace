@@ -72,7 +72,12 @@ public final class GlobalHotkeyManager: @unchecked Sendable {
             for (profileID, registered) in snapshot where registered == hotkey {
                 self.logger.debug("hotkey fired for profile \(profileID, privacy: .public)")
                 if let callback {
-                    callback(profileID)
+                    // The AppKit contract says this closure runs on
+                    // the main thread, so we can hop into the main
+                    // actor directly without an extra Task hop.
+                    MainActor.assumeIsolated {
+                        callback(profileID)
+                    }
                 }
                 return
             }
