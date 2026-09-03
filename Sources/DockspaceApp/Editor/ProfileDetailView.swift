@@ -78,6 +78,17 @@ struct ProfileDetailView: View {
                             }
                         }
                     }
+
+                    Section("Hotkey") {
+                        HotkeyRecorderView(hotkey: Binding(
+                            get: { draft.hotkey },
+                            set: { newValue in
+                                var copy = draft
+                                copy.hotkey = newValue
+                                self.draft = copy
+                            }
+                        ))
+                    }
                 }
                 .formStyle(.grouped)
                 .toolbar {
