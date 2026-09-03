@@ -11,15 +11,15 @@ struct HotkeyRecorderView: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            if let hotkey {
-                Text(hotkey.displayString)
+            if let current = hotkey {
+                Text(current.displayString)
                     .font(.system(.body, design: .monospaced))
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(Color.secondary.opacity(0.15), in: RoundedRectangle(cornerRadius: 6))
                 Button("Change") { isRecording = true }
                 Button("Clear") {
-                    hotkey = nil as Hotkey?
+                    hotkey = nil
                 }
             } else {
                 Text("None")
