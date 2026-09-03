@@ -3,6 +3,7 @@ import DockspaceCore
 
 /// Modal sheet for naming a brand new profile. Created profiles start
 /// empty; the user adds apps and spacers in the editor after.
+@MainActor
 struct NewProfileSheet: View {
     @Environment(AppState.self) private var state
     @Environment(\.dismiss) private var dismiss
