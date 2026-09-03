@@ -15,6 +15,7 @@ Inspirado pelo [Dockset](https://dockset.app/) (pago). Referência técnica mais
 - **No dependências externas de runtime.** Manter zero SPM deps no MVP. Se precisar, justificar no PR.
 - **Sem cloud, sem rede, sem analytics, sem crash reporting remoto.** Open source exige confiança.
 - **LGPL/GPL não permitido** em deps (combate com MIT). MIT/Apache 2.0/BSD ok.
+- **Entitlements:** app é **não-sandboxed** (`com.apple.security.app-sandbox = false`) em `Resources/Dockspace.entitlements` porque precisa escrever em `~/Library/Preferences/com.apple.dock.plist` e rodar `killall Dock`. Mudanças em entitlements devem vir acompanhadas de teste manual.
 
 ## Layout
 
@@ -84,17 +85,24 @@ Plano completo vive em conversa e nas issues. Não foi materializado em `docs/PL
 
 ```bash
 # Dev rápido
-swift run Dockspace
+make run                 # ou: swift run Dockspace
 
 # Testes
-swift test
+make test                # ou: swift test
 
-# Build .app bundle
-./Scripts/build-app.sh
+# Build .app bundle (release)
+make app                 # ou: ./Scripts/build-app.sh
+
+# Release completo (sign + notarize + DMG)
+make release
 
 # Limpar build
-swift package clean
+make clean
 ```
+
+Setas de assinatura/notarization para `make release`:
+- `DOCKSPACE_SIGN_IDENTITY="Developer ID Application: <name> (<TEAMID>)"`
+- `DOCKSPACE_NOTARY_PROFILE="<keychain-profile>"` (criado via `xcrun notarytool store-credentials`)
 
 ## Pra agentes voltando nesse repo
 

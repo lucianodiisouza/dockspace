@@ -23,9 +23,13 @@ Inspired by [Dockset](https://dockset.app/) — built as an open-source alternat
 
 ## Build & Run
 
+The project ships a `Makefile` with the common commands. `make help` lists them all.
+
 ### From terminal (fast iteration)
 
 ```bash
+make run
+# or
 swift run Dockspace
 ```
 
@@ -33,32 +37,58 @@ Opens a SwiftUI menu bar app. May show a Dock icon in dev mode (release builds h
 
 ### As a proper `.app` bundle (recommended for daily use)
 
-The app needs a real `.app` bundle with `Info.plist` (`LSUIElement=YES` to hide from Dock, entitlements, etc.). Generate it via the bundled script:
-
 ```bash
-./Scripts/build-app.sh
+make app
 open ./build/Dockspace.app
 ```
+
+This runs `Scripts/build-app.sh`, which compiles a release binary, assembles a proper `.app` bundle with `Info.plist` (`LSUIElement=YES`, focus status usage description, etc.), embeds the entitlements, and applies an ad-hoc code signature.
+
+### Signed + notarized DMG (for distribution)
+
+```bash
+export DOCKSPACE_SIGN_IDENTITY="Developer ID Application: Luciano dii Souza (TEAMID)"
+export DOCKSPACE_NOTARY_PROFILE="dockspace-notary"   # see xcrun notarytool store-credentials
+make release
+open ./build/release/Dockspace-0.2.0.dmg
+```
+
+The release script calls `Scripts/build-app.sh`, signs the bundle with `--options runtime`, submits it to Apple's notary service via `xcrun notarytool`, staples the ticket back onto the binary, and produces a `Dockspace-0.2.0.dmg` ready for GitHub Releases / Homebrew Cask.
 
 ### Tests
 
 ```bash
+make test
+# or
 swift test
 ```
+
+### Regenerate the placeholder icons
+
+```bash
+make icon
+```
+
+Renders 10 sizes of a coral placeholder icon into `Resources/Assets.xcassets/AppIcon.appiconset/`. Replace the generated PNGs with a real design when you have one.
 
 ## Project structure
 
 ```
 dockspace/
 ├── Package.swift              # SPM manifest
+├── Makefile                   # make build / test / app / release
+├── Resources/                 # Assets, entitlements, future localized strings
 ├── Sources/
 │   ├── DockspaceApp/          # SwiftUI MenuBarExtra + windows (UI)
-│   ├── DockspaceCore/         # pure Swift: plist reader/writer, swapper
-│   └── DockspaceStorage/      # profile persistence (JSON)
+│   ├── DockspaceCore/         # pure Swift: plist reader/writer, swapper, hotkey, focus
+│   └── DockspaceStorage/      # profile persistence (JSON) + backups
 ├── Tests/
-│   └── DockspaceCoreTests/    # plist roundtrip, swapper logic
+│   ├── DockspaceCoreTests/    # plist roundtrip, swapper, hotkey, focus, change detection
+│   └── DockspaceStorageTests/ # ProfileStore, BackupManager
 ├── Scripts/
-│   └── build-app.sh           # builds .app bundle from swift build output
+│   ├── build-app.sh           # builds .app bundle from swift build output
+│   ├── release.sh             # signs + notarizes + packages DMG
+│   └── generate-icon.py       # regenerates the placeholder app icons
 └── docs/                      # design docs, ADRs
 ```
 
