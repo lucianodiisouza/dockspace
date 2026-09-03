@@ -6,7 +6,7 @@ import SwiftUI
 @MainActor
 struct NewProfileSheet: View {
   @Environment(AppState.self) private var state
-  @Environment(\.dismiss) private var dismiss
+  @Environment(\.dismissWindow) private var dismissWindow
   @State private var name: String = "Work"
   @State private var color: ProfileColor = .blue
 
@@ -33,12 +33,12 @@ struct NewProfileSheet: View {
 
       HStack {
         Spacer()
-        Button("Cancel") { dismiss() }
+        Button("Cancel") { dismissWindow() }
           .keyboardShortcut(.cancelAction)
         Button("Create") {
           do {
             _ = try state.createProfile(name: name, color: color)
-            dismiss()
+            dismissWindow()
           } catch {
             // Last error is reflected on AppState, nothing
             // else to do here.

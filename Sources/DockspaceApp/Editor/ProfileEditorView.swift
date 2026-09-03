@@ -7,7 +7,7 @@ import SwiftUI
 @MainActor
 struct ProfileEditorView: View {
   @Environment(AppState.self) private var state
-  @Environment(\.dismiss) private var dismiss
+  @Environment(\.dismissWindow) private var dismissWindow
   @State private var newName: String = ""
   @State private var selectedProfileId: UUID?
 
@@ -31,7 +31,7 @@ struct ProfileEditorView: View {
     .navigationTitle("Dockspace")
     .toolbar {
       ToolbarItem(placement: .confirmationAction) {
-        Button("Done") { dismiss() }
+        Button("Done") { dismissWindow() }
       }
     }
     .frame(minWidth: 640, minHeight: 420)
