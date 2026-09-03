@@ -45,7 +45,10 @@ let package = Package(
             dependencies: [
                 "DockspaceCore"
             ],
-            path: "Tests/DockspaceCoreTests"
+            path: "Tests/DockspaceCoreTests",
+            resources: [
+                .copy("Fixtures/sample-dock.plist")
+            ]
         ),
         .testTarget(
             name: "DockspaceStorageTests",
