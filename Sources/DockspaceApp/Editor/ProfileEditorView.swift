@@ -4,6 +4,7 @@ import DockspaceCore
 /// Top-level window/sheet for managing all profiles. Lists profiles
 /// with the ability to add, rename, recolor, delete, and drill into a
 /// single profile for item-level editing.
+@MainActor
 struct ProfileEditorView: View {
     @Environment(AppState.self) private var state
     @Environment(\.dismiss) private var dismiss
