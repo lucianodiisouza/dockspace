@@ -13,14 +13,17 @@ public struct DockPlistWriter {
     self.url = url
   }
 
-  /// Writes the snapshot to `url` as XML. Replaces any existing
-  /// content. Throws `DockError.plistWriteFailed` on I/O or encoding
-  /// failure.
+  /// Writes the snapshot to `url` as XML.
+  ///
+  /// Reads the existing plist (if any) and preserves every other
+  /// top-level key — orientation, tile size, magnification, autohide,
+  /// recents, process indicators, etc. — so swapping profiles does not
+  /// reset the user's dock preferences. Only `persistent-apps` and
+  /// `persistent-others` are replaced. If the file does not exist yet
+  /// the snapshot is written into an empty dict (the Dock will use its
+  /// built-in defaults for everything else).
   public func write(snapshot: DockSnapshot) throws {
-    let root: [String: Any] = [
-      "persistent-apps": snapshot.apps.map(encodeItem),
-      "persistent-others": snapshot.others.map(encodeItem),
-    ]
+    let root = mergePreservingOtherKeys(snapshot: snapshot)
 
     let data: Data
     do {
@@ -38,6 +41,23 @@ public struct DockPlistWriter {
     } catch {
       throw DockError.plistWriteFailed(url, underlying: error.localizedDescription)
     }
+  }
+
+  /// Loads the existing plist at `url` (if present and parseable) and
+  /// overlays the new persistent tile arrays on top, keeping every
+  /// other key the Dock uses to render itself.
+  func mergePreservingOtherKeys(snapshot: DockSnapshot) -> [String: Any] {
+    var root: [String: Any] = [:]
+    if let data = try? Data(contentsOf: url),
+      let plist = try? PropertyListSerialization.propertyList(
+        from: data, options: [], format: nil),
+      let dict = plist as? [String: Any]
+    {
+      root = dict
+    }
+    root["persistent-apps"] = snapshot.apps.map(encodeItem)
+    root["persistent-others"] = snapshot.others.map(encodeItem)
+    return root
   }
 
   // MARK: - Encoding
