@@ -19,17 +19,21 @@ public final class AppState {
     private let store: ProfileStore
     private let swapper: DockSwapper
     private let backup: BackupManager
+    private let hotkeys: GlobalHotkeyManager
 
     public init(
         store: ProfileStore,
         swapper: DockSwapper,
-        backup: BackupManager
+        backup: BackupManager,
+        hotkeys: GlobalHotkeyManager = GlobalHotkeyManager()
     ) {
         self.store = store
         self.swapper = swapper
         self.backup = backup
+        self.hotkeys = hotkeys
         self.profiles = store.file.profiles
         self.activeProfileId = store.file.activeProfileId
+        registerHotkeys()
     }
 
     public var activeProfile: Profile? {
@@ -42,6 +46,7 @@ public final class AppState {
     public func reload() {
         profiles = store.file.profiles
         activeProfileId = store.file.activeProfileId
+        registerHotkeys()
     }
 
     public func createProfile(name: String, color: ProfileColor = .blue) throws -> Profile {
@@ -73,6 +78,24 @@ public final class AppState {
             lastError = nil
         } catch {
             lastError = error.localizedDescription
+        }
+    }
+
+    // MARK: - Hotkey glue
+
+    private func registerHotkeys() {
+        let bindings: [UUID: Hotkey] = profiles.reduce(into: [:]) { acc, profile in
+            if let hotkey = profile.hotkey {
+                acc[profile.id] = hotkey
+            }
+        }
+        hotkeys.setBindings(bindings) { [weak self] profileID in
+            Task { @MainActor in
+                guard let self,
+                      let profile = self.profiles.first(where: { $0.id == profileID })
+                else { return }
+                self.switchTo(profile: profile)
+            }
         }
     }
 }
