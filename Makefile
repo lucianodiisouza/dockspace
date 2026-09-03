@@ -35,7 +35,7 @@ release: ## Build + sign + notarize + DMG. Set DOCKSPACE_SIGN_IDENTITY and DOCKS
 icon: ## Regenerate the placeholder app icons via PIL.
 	python3 Scripts/generate-icon.py
 
-format: ## Check that all Swift sources match swift-format (CI uses this).
+format: ## Check that all Swift sources match swift format (CI uses this).
 	@set -e; for f in $$(find Sources Tests -name '*.swift'); do \
 		echo "lint $$f"; \
 		$(SWIFT) format lint --strict "$$f" || exit 1; \
