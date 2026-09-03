@@ -13,6 +13,7 @@ extension AppState {
         let store = try ProfileStore(url: profilesURL)
         let swapper = DockSwapper.live()
         let backup = BackupManager(directory: backupsDir)
-        return AppState(store: store, swapper: swapper, backup: backup)
+        let hotkeys = GlobalHotkeyManager()
+        return AppState(store: store, swapper: swapper, backup: backup, hotkeys: hotkeys)
     }
 }

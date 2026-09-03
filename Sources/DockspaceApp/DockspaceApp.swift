@@ -21,7 +21,13 @@ struct DockspaceApp: App {
             let store = try! ProfileStore(url: URL(fileURLWithPath: "/dev/null"))
             let swapper = DockSwapper.live()
             let backup = BackupManager(directory: URL(fileURLWithPath: "/dev/null"))
-            self._state = State(initialValue: AppState(store: store, swapper: swapper, backup: backup))
+            let hotkeys = GlobalHotkeyManager()
+            self._state = State(initialValue: AppState(
+                store: store,
+                swapper: swapper,
+                backup: backup,
+                hotkeys: hotkeys
+            ))
         }
     }
 

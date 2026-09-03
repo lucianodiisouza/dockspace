@@ -25,7 +25,7 @@ public final class AppState {
         store: ProfileStore,
         swapper: DockSwapper,
         backup: BackupManager,
-        hotkeys: GlobalHotkeyManager = GlobalHotkeyManager()
+        hotkeys: GlobalHotkeyManager
     ) {
         self.store = store
         self.swapper = swapper
