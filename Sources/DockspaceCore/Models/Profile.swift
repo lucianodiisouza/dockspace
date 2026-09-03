@@ -11,19 +11,22 @@ public struct Profile: Codable, Equatable, Hashable, Identifiable, Sendable {
     public var color: ProfileColor
     public var items: [DockItem]
     public var focusModeBinding: String?
+    public var hotkey: Hotkey?
 
     public init(
         id: UUID = UUID(),
         name: String,
         color: ProfileColor = .blue,
         items: [DockItem] = [],
-        focusModeBinding: String? = nil
+        focusModeBinding: String? = nil,
+        hotkey: Hotkey? = nil
     ) {
         self.id = id
         self.name = name
         self.color = color
         self.items = items
         self.focusModeBinding = focusModeBinding
+        self.hotkey = hotkey
     }
 
     /// Snapshot the profile is equivalent to. Used when swapping.
