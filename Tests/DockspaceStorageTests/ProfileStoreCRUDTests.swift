@@ -73,6 +73,26 @@ final class ProfileStoreCRUDTests: XCTestCase {
     }
   }
 
+  func test_fileExistedOnLoad_isFalseWhenFileIsMissing() throws {
+    let url = makeTempURL()
+    defer { try? FileManager.default.removeItem(at: url) }
+
+    let store = try ProfileStore(url: url)
+    XCTAssertFalse(store.fileExistedOnLoad)
+  }
+
+  func test_fileExistedOnLoad_isTrueAfterFirstWrite() throws {
+    let url = makeTempURL()
+    defer { try? FileManager.default.removeItem(at: url) }
+
+    let first = try ProfileStore(url: url)
+    try first.create(Profile(name: "Work"))
+    XCTAssertFalse(first.fileExistedOnLoad)
+
+    let reopened = try ProfileStore(url: url)
+    XCTAssertTrue(reopened.fileExistedOnLoad)
+  }
+
   private func makeTempURL() -> URL {
     FileManager.default.temporaryDirectory
       .appendingPathComponent("dockspace-store-\(UUID().uuidString).json")

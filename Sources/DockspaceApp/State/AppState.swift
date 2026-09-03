@@ -39,6 +39,7 @@ public final class AppState {
     self.focusProvider = focusProvider
     self.profiles = store.file.profiles
     self.activeProfileId = store.file.activeProfileId
+    seedFirstProfileIfNeeded()
     registerHotkeys()
     startFocusMonitor()
   }
@@ -46,6 +47,38 @@ public final class AppState {
   public var activeProfile: Profile? {
     guard let activeProfileId else { return nil }
     return profiles.first { $0.id == activeProfileId }
+  }
+
+  /// On a true first launch (the on-disk file did not exist yet) we
+  /// snapshot whatever is currently in the Dock and save it as a single
+  /// "Default" profile, marked active. This way the user starts with a
+  /// real fallback they can always switch back to, and creating a new
+  /// empty profile never silently nukes their existing dock.
+  ///
+  /// We only run this when the file did not exist at load time — if the
+  /// user has ever opened the app before (even and deleted every
+  /// profile), we respect that and start blank.
+  private func seedFirstProfileIfNeeded() {
+    guard !store.fileExistedOnLoad else { return }
+    guard profiles.isEmpty else { return }
+    guard let snapshot = try? swapper.snapshot() else { return }
+    // A totally empty dock would be a useless seed — let the user start
+    // from scratch in that case.
+    guard !snapshot.allItems.isEmpty else { return }
+    let seeded = Profile(
+      name: "Default",
+      color: .blue,
+      items: snapshot.allItems
+    )
+    do {
+      try store.create(seeded)
+      try store.setActive(id: seeded.id)
+      profiles = store.file.profiles
+      activeProfileId = seeded.id
+    } catch {
+      // Best-effort: if persistence fails the user still sees an empty
+      // popover and can create a profile manually.
+    }
   }
 
   // MARK: - Persistence passthrough

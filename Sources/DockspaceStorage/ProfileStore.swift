@@ -9,11 +9,18 @@ import Foundation
 public final class ProfileStore {
   public let url: URL
 
+  /// Whether the on-disk profiles file existed at the moment this store
+  /// was initialized. Lets the caller distinguish a real first launch
+  /// (file never written) from a state where the user has deleted every
+  /// profile but the file itself still exists.
+  public let fileExistedOnLoad: Bool
+
   private(set) public var file: ProfilesFile
 
   public init(url: URL) throws {
     self.url = url
-    if FileManager.default.fileExists(atPath: url.path) {
+    self.fileExistedOnLoad = FileManager.default.fileExists(atPath: url.path)
+    if self.fileExistedOnLoad {
       let data = try Data(contentsOf: url)
       let decoder = JSONDecoder()
       self.file = try decoder.decode(ProfilesFile.self, from: data)
